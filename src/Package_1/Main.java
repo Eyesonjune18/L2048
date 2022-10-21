@@ -6,8 +6,6 @@ public class Main {
 
         Board b1 = new Board();
 
-        b1.print();
-
     }
 
 }

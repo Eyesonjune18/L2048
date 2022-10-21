@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Random;
 
 import static java.awt.event.KeyEvent.*;
 
@@ -15,11 +16,33 @@ public class Board {
 
     public Board() {
 
-        grid[0][0] = 1;
-        grid[3][3] = 1;
-        grid[0][2] = 1;
+        spawnTile();
 
         gameGUI = new GUI(this);
+
+    }
+
+    void spawnTile() {
+
+        Random r = new Random();
+        boolean newTileIsFour = (r.nextInt(10) == 0);
+        boolean tileHasSpawned = false;
+        int x, y;
+
+        while(!tileHasSpawned) {
+
+            x = r.nextInt(4);
+            y = r.nextInt(4);
+
+            if(grid[x][y] == 0) {
+
+                if(newTileIsFour) grid[x][y] = 4;
+                else grid[x][y] = 2;
+                tileHasSpawned = true;
+
+            }
+
+        }
 
     }
 
@@ -48,7 +71,7 @@ public class Board {
                 // For every X-coord, starting from the left and going to the right
 
                 if(grid[x][y] != 0) {
-                    // If the value at this coord is not empty
+                    // If the value at this coord is not empty (prevents unnecessary work)
 
                     int shift = 0;
                     // Y-offset from the current coord
@@ -58,14 +81,16 @@ public class Board {
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(y + shift == 3 || grid[x][y + shift + 1] != 0) doShift = true;
-                        // If the shift has either reached the grid boundaries, or the next number is not a 0, shift
+                        if(y + shift == 3 || (grid[x][y + shift + 1] != 0 && grid[x][y + shift + 1] != grid[x][y])) doShift = true;
+                        // If the shift has either reached the grid boundaries, or the next number is not a 0 and not the same number, shift
                         else shift++;
-                        // Otherwise, if the next number is a 0, keep incrementing shift
+                        // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
                         if(doShift && shift != 0) {
 
-                            grid[x][y + shift] = grid[x][y];
+                            if(grid[x][y + shift] == 0) grid[x][y + shift] = grid[x][y];
+                            else grid[x][y + shift] *= 2;
+
                             grid[x][y] = 0;
 
                         }
@@ -99,14 +124,16 @@ public class Board {
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(y - shift == 0 || grid[x][y - shift - 1] != 0) doShift = true;
-                            // If the shift has either reached the grid boundaries, or the next number is not a 0, shift
+                        if(y - shift == 0 || (grid[x][y - shift - 1] != 0 && grid[x][y - shift - 1] != grid[x][y])) doShift = true;
+                        // If the shift has either reached the grid boundaries, or the next number is not a 0, shift
                         else shift++;
                         // Otherwise, if the next number is a 0, keep incrementing shift
 
                         if(doShift && shift != 0) {
 
-                            grid[x][y - shift] = grid[x][y];
+                            if(grid[x][y - shift] == 0) grid[x][y - shift] = grid[x][y];
+                            else grid[x][y - shift] *= 2;
+
                             grid[x][y] = 0;
 
                         }
@@ -140,14 +167,16 @@ public class Board {
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(x + shift == 3 || grid[x + shift + 1][y] != 0) doShift = true;
-                            // If the shift has either reached the grid boundaries, or the next number is not a 0, shift
+                        if(x + shift == 3 || (grid[x + shift + 1][y] != 0 && grid[x + shift + 1][y] != grid[x][y])) doShift = true;
+                            // If the shift has either reached the grid boundaries, or the next number is not a 0 and not the same number, shift
                         else shift++;
-                        // Otherwise, if the next number is a 0, keep incrementing shift
+                        // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
                         if(doShift && shift != 0) {
 
-                            grid[x + shift][y] = grid[x][y];
+                            if(grid[x + shift][y] == 0) grid[x + shift][y] = grid[x][y];
+                            else grid[x + shift][y] *= 2;
+
                             grid[x][y] = 0;
 
                         }
@@ -181,14 +210,16 @@ public class Board {
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(x - shift == 0 || grid[x - shift - 1][y] != 0) doShift = true;
-                            // If the shift has either reached the grid boundaries, or the next number is not a 0, shift
+                        if(x - shift == 0 || (grid[x - shift - 1][y] != 0 && grid[x - shift - 1][y] != grid[x][y])) doShift = true;
+                            // If the shift has either reached the grid boundaries, or the next number is not a 0 and not the same number, shift
                         else shift++;
-                        // Otherwise, if the next number is a 0, keep incrementing shift
+                        // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
                         if(doShift && shift != 0) {
 
-                            grid[x - shift][y] = grid[x][y];
+                            if(grid[x - shift][y] == 0) grid[x - shift][y] = grid[x][y];
+                            else grid[x - shift][y] *= 2;
+
                             grid[x][y] = 0;
 
                         }
@@ -282,6 +313,7 @@ class KeyboardInput extends KeyAdapter {
             gameGUI.boardData.moveUp();
 //            gameGUI.boardData.print();
             gameGUI.update();
+            gameGUI.boardData.spawnTile();
 
         }
 
@@ -290,6 +322,7 @@ class KeyboardInput extends KeyAdapter {
             gameGUI.boardData.moveDown();
 //            gameGUI.boardData.print();
             gameGUI.update();
+            gameGUI.boardData.spawnTile();
 
         }
 
@@ -298,6 +331,7 @@ class KeyboardInput extends KeyAdapter {
             gameGUI.boardData.moveRight();
 //            gameGUI.boardData.print();
             gameGUI.update();
+            gameGUI.boardData.spawnTile();
 
         }
 
@@ -306,6 +340,7 @@ class KeyboardInput extends KeyAdapter {
             gameGUI.boardData.moveLeft();
 //            gameGUI.boardData.print();
             gameGUI.update();
+            gameGUI.boardData.spawnTile();
 
         }
 
