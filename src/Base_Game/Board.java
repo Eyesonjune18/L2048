@@ -12,16 +12,16 @@ import static java.awt.event.KeyEvent.*;
 public class Board {
     // Represents the overall game state
 
-    int[][] grid;
-    GUI gameGUI;
+    private final int[][] grid;
+    private final Boolean[][] hasCombined;
 
     public Board() {
 
         grid = new int[4][4];
-
+        hasCombined = new Boolean[4][4];
         spawnTile();
 
-        gameGUI = new GUI(this);
+        new GUI(this);
 
     }
 
@@ -50,37 +50,37 @@ public class Board {
 
     }
 
-    boolean doShift(boolean horizontal, int shift, int c1, int c2, Boolean[] hasCombined) {
+    boolean tileShift(boolean horizontal, int shift, int c1, int c2, Boolean[][] hasCombined) {
         // Shifts the current tile based on the values passed in
         // This function is called by all the move functions to avoid duplicate code
 
-        int x1, y1, x2, y2;
+        int destinationX, destinationY, sourceX, sourceY;
 
         if(horizontal) {
 
-            x1 = shift;
-            y1 = c2;
-            x2 = c1;
-            y2 = c2;
+            destinationX = shift;
+            destinationY = c2;
+            sourceX = c1;
+            sourceY = c2;
 
         } else {
 
-            x1 = c2;
-            y1 = shift;
-            x2 = c2;
-            y2 = c1;
+            destinationX = c2;
+            destinationY = shift;
+            sourceX = c2;
+            sourceY = c1;
 
         }
 
-        if(grid[x1][y1] == 0) grid[x1][y1] = grid[x2][y2];
-        else if(!hasCombined[shift]) {
+        if(grid[destinationX][destinationY] == 0) grid[destinationX][destinationY] = grid[sourceX][sourceY];
+        else if(!hasCombined[destinationX][destinationY]) {
 
-            grid[x1][y1] *= 2;
-            hasCombined[shift] = true;
+            grid[destinationX][destinationY] *= 2;
+            hasCombined[destinationX][destinationY] = true;
 
         }
 
-        grid[x2][y2] = 0;
+        grid[sourceX][sourceY] = 0;
 
         return true;
 
@@ -91,6 +91,13 @@ public class Board {
 
         boolean hasMoved = false;
 
+        for(int i = 0; i < 4; i++) {
+
+            for(int j = 0; j < 4; j++)  hasCombined[i][j] = false;
+
+        }
+        // Clear previous move's merge flags
+
         for(int y = 2; y >= 0; y--) {
             // For every Y-coord, starting 1 from the top and going to the bottom
 
@@ -100,32 +107,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty (prevents unnecessary work)
 
-                    Boolean[] hasCombined = new Boolean[4];
-                    // Boolean array that represents (for each tile above) whether the tile has already been combined
-                    // Prevents multi-combine bug
-                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
-                    // Fills wrapper array with false values
-
                     int shift = y;
                     // Y-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
+
+//                    int tileValue = grid[x][y];
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
                         if(shift == 3 || (grid[x][shift + 1] != 0 && grid[x][shift + 1] != grid[x][y])) doShift = true;
                         // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
-                        else if(grid[x][shift + 1] == grid[x][y] && hasCombined[shift + 1]) doShift = true;
+                        else if(grid[x][shift + 1] == grid[x][y] && hasCombined[x][shift + 1]) doShift = true;
                         // If the next tile is the same number, but it has already been merged, shift using the current value
                         else shift++;
                         // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != y) hasMoved = doShift(false, shift, y, x, hasCombined);
+                        if(doShift && shift != y) hasMoved = tileShift(false, shift, y, x, hasCombined);
                         // If the shift is to be performed, update hasMoved to reflect as much
                         // This is written in an odd way to avoid a multi-line statement
 
                     }
+
+//                    System.out.println("UP: For tile " + tileValue + " at (" + x + ", " + y + "): " + Arrays.toString(hasCombined));
 
                 }
 
@@ -142,6 +147,13 @@ public class Board {
 
         boolean hasMoved = false;
 
+        for(int i = 0; i < 4; i++) {
+
+            for(int j = 0; j < 4; j++)  hasCombined[i][j] = false;
+
+        }
+        // Clear previous move's merge flags
+
         for(int y = 1; y < 4; y++) {
             // For every Y-coord, starting 1 from the bottom and going to the top
 
@@ -151,32 +163,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty
 
-                    Boolean[] hasCombined = new Boolean[4];
-                    // Boolean array that represents (for each tile above) whether the tile has already been combined
-                    // Prevents multi-combine bug
-                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
-                    // Fills wrapper array with false values
-
                     int shift = y;
                     // Y-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
+
+//                    int tileValue = grid[x][y];
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
                         if(shift == 0 || (grid[x][shift - 1] != 0 && grid[x][shift - 1] != grid[x][y])) doShift = true;
                         // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
-                        else if(grid[x][shift - 1] == grid[x][y] && hasCombined[shift - 1]) doShift = true;
+                        else if(grid[x][shift - 1] == grid[x][y] && hasCombined[x][shift - 1]) doShift = true;
                         // If the next tile is the same number, but it has already been merged, shift using the current value
                         else shift--;
                         // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != y) hasMoved = doShift(false, shift, y, x, hasCombined);
+                        if(doShift && shift != y) hasMoved = tileShift(false, shift, y, x, hasCombined);
                         // If the shift is to be performed, update hasMoved to reflect as much
                         // This is written in an odd way to avoid a multi-line statement
 
                     }
+
+//                    System.out.println("DOWN: For tile " + tileValue + " at (" + x + ", " + y + "): " + Arrays.toString(hasCombined));
 
                 }
 
@@ -193,6 +203,13 @@ public class Board {
 
         boolean hasMoved = false;
 
+        for(int i = 0; i < 4; i++) {
+
+            for(int j = 0; j < 4; j++)  hasCombined[i][j] = false;
+
+        }
+        // Clear previous move's merge flags
+
         for(int x = 2; x >= 0; x--) {
             // For every X-coord, starting 1 from the right and going to the left
 
@@ -202,32 +219,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty
 
-                    Boolean[] hasCombined = new Boolean[4];
-                    // Boolean array that represents (for each tile above) whether the tile has already been combined
-                    // Prevents multi-combine bug
-                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
-                    // Fills wrapper array with false values
-
                     int shift = x;
                     // X-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
+
+//                    int tileValue = grid[x][y];
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
                         if(shift == 3 || (grid[shift + 1][y] != 0 && grid[shift + 1][y] != grid[x][y])) doShift = true;
                         // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
-                        else if(grid[shift + 1][y] == grid[x][y] && hasCombined[shift + 1]) doShift = true;
+                        else if(grid[shift + 1][y] == grid[x][y] && hasCombined[shift + 1][y]) doShift = true;
                         // If the next tile is the same number, but it has already been merged, shift using the current value
                         else shift++;
                         // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != x) hasMoved = doShift(true, shift, x, y, hasCombined);
+                        if(doShift && shift != x) hasMoved = tileShift(true, shift, x, y, hasCombined);
                         // If the shift is to be performed, update hasMoved to reflect as much
                         // This is written in an odd way to avoid a multi-line statement
 
                     }
+
+//                    System.out.println("RIGHT: For tile " + tileValue + " at (" + x + ", " + y + "): " + Arrays.toString(hasCombined));
 
                 }
 
@@ -244,6 +259,13 @@ public class Board {
 
         boolean hasMoved = false;
 
+        for(int i = 0; i < 4; i++) {
+
+            for(int j = 0; j < 4; j++)  hasCombined[i][j] = false;
+
+        }
+        // Clear previous move's merge flags
+
         for(int x = 1; x < 4; x++) {
             // For every X-coord, starting 1 from the left and going to the right
 
@@ -253,32 +275,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty
 
-                    Boolean[] hasCombined = new Boolean[4];
-                    // Boolean array that represents (for each tile above) whether the tile has already been combined
-                    // Prevents multi-combine bug
-                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
-                    // Fills wrapper array with false values
-
                     int shift = x;
                     // X-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
+
+//                    int tileValue = grid[x][y];
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
                         if(shift == 0 || (grid[shift - 1][y] != 0 && grid[shift - 1][y] != grid[x][y])) doShift = true;
                         // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
-                        else if(grid[shift - 1][y] == grid[x][y] && hasCombined[shift - 1]) doShift = true;
+                        else if(grid[shift - 1][y] == grid[x][y] && hasCombined[shift - 1][y]) doShift = true;
                         // If the next tile is the same number, but it has already been merged, shift using the current value
                         else shift--;
                         // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != x) hasMoved = doShift(true, shift, x, y, hasCombined);
+                        if(doShift && shift != x) hasMoved = tileShift(true, shift, x, y, hasCombined);
                         // If the shift is to be performed, update hasMoved to reflect as much
                         // This is written in an odd way to avoid a multi-line statement
 
                     }
+
+//                    System.out.println("LEFT: For tile " + tileValue + " at (" + x + ", " + y + "): " + Arrays.toString(hasCombined));
 
                 }
 
