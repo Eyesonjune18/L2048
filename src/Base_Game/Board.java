@@ -10,6 +10,7 @@ import java.util.Random;
 import static java.awt.event.KeyEvent.*;
 
 public class Board {
+    // Represents the overall game state
 
     int[][] grid;
     GUI gameGUI;
@@ -25,6 +26,7 @@ public class Board {
     }
 
     void spawnTile() {
+        // Spawns a new tile, either a 2 or (at a 10% chance) a 4, at a random unoccupied location
 
         Random r = new Random();
         boolean newTileIsFour = (r.nextInt(10) == 0);
@@ -49,6 +51,8 @@ public class Board {
     }
 
     boolean doShift(boolean horizontal, int shift, int c1, int c2, Boolean[] hasCombined) {
+        // Shifts the current tile based on the values passed in
+        // This function is called by all the move functions to avoid duplicate code
 
         int x1, y1, x2, y2;
 
@@ -83,6 +87,7 @@ public class Board {
     }
 
     void moveUp() {
+        // Shifts all tiles up if applicable
 
         boolean hasMoved = false;
 
@@ -133,6 +138,7 @@ public class Board {
     }
 
     void moveDown() {
+        // Shifts all tiles down if applicable
 
         boolean hasMoved = false;
 
@@ -183,6 +189,7 @@ public class Board {
     }
 
     void moveRight() {
+        // Shifts all tiles right if applicable
 
         boolean hasMoved = false;
 
@@ -233,6 +240,7 @@ public class Board {
     }
 
     void moveLeft() {
+        // Shifts all tiles left if applicable
 
         boolean hasMoved = false;
 
@@ -283,6 +291,7 @@ public class Board {
     }
 
     int getTile(int x, int y) {
+        // Returns the tile at a coordinate
 
         return grid[x][y];
 
@@ -291,11 +300,13 @@ public class Board {
 }
 
 class GUI extends JFrame {
+    // The basic grid GUI for the game
 
     Board boardData;
     ArrayList<JLabel> labels;
 
     public GUI(Board boardData) {
+        // Creates a new GUI
 
         this.boardData = boardData;
         labels = new ArrayList<>();
@@ -323,6 +334,7 @@ class GUI extends JFrame {
     }
 
     void update() {
+        // Updates the GUI to reflect the game state
 
         int tileValue;
         Color tileColor;
@@ -370,18 +382,21 @@ class GUI extends JFrame {
     }
 
     int textSizeFromDigits(int digits) {
+        // Finds an appropriate font size based on the amount of digits in a number
 
         return 100 - (10 * (digits - 1));
 
     }
 
     int translateCoordToLabel(int x, int y) {
+        // Translates an (x, y) coordinate into a "labels" index value
 
         return 4 * (3 - y) + x;
 
     }
 
     int amountOfDigits(int n) {
+        // Finds the amount of decimal digits in a number
 
         int digits = 0;
 
@@ -399,6 +414,7 @@ class GUI extends JFrame {
 }
 
 class KeyboardInput extends KeyAdapter {
+    // Keyboard listener for arrow buttons
 
     GUI gameGUI;
 
