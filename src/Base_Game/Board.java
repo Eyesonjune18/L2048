@@ -11,10 +11,12 @@ import static java.awt.event.KeyEvent.*;
 
 public class Board {
 
-    int[][] grid = new int[4][4];
+    int[][] grid;
     GUI gameGUI;
 
     public Board() {
+
+        grid = new int[4][4];
 
         spawnTile();
 
@@ -280,7 +282,7 @@ class GUI extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new GridLayout(4, 4));
 
-        this.addKeyListener(new KeyboardInput(this));
+        addKeyListener(new KeyboardInput(this));
 
         for (int i = 0; i < 16; i++) {
 
@@ -288,6 +290,7 @@ class GUI extends JFrame {
             JLabel l = labels.get(i);
             l.setHorizontalAlignment(JLabel.CENTER);
             l.setFont(new Font(l.getFont().getName(), Font.BOLD, 100));
+            l.setOpaque(true);
             add(l);
 
         }
@@ -299,14 +302,44 @@ class GUI extends JFrame {
 
     void update() {
 
+        int tileValue;
+        Color tileColor;
+
         for(int y = 3; y >= 0; y--) {
 
             for(int x = 0; x < 4; x++) {
 
-                String tileNumber = String.valueOf(boardData.getTile(x, y));
+                tileValue = boardData.getTile(x, y);
+
+                String tileNumber = String.valueOf(tileValue);
                 if(Integer.parseInt(tileNumber) == 0) tileNumber = "";
 
-                labels.get(translateCoordToLabel(x, y)).setText(tileNumber);
+                JLabel l = labels.get(translateCoordToLabel(x, y));
+                l.setText(tileNumber);
+
+                tileColor = switch (tileValue) {
+
+                        case 0 -> new Color(204, 193, 180);
+                        case 2 -> new Color(238, 228, 218);
+                        case 4 -> new Color(238, 225, 201);
+                        case 8 -> new Color(243, 178, 122);
+                        case 16 -> new Color(246, 150, 100);
+                        case 32 -> new Color(247, 124, 95);
+                        case 64 -> new Color(247, 95, 59);
+                        case 128 -> new Color(237, 208, 115);
+                        case 256 -> new Color(237, 204, 98);
+                        case 512 -> new Color(237, 201, 80);
+                        case 1024 -> new Color(237, 197, 63);
+                        case 2048 -> new Color(237, 194, 46);
+                        default -> Color.BLACK;
+
+                };
+
+                l.setFont(new Font(l.getFont().getName(), Font.BOLD, textSizeFromDigits(amountOfDigits(tileValue))));
+
+                if(tileValue >= 8) l.setForeground(new Color(249, 246, 242));
+                else l.setForeground(new Color(119, 110, 101));
+                l.setBackground(tileColor);
 
             }
 
@@ -314,9 +347,30 @@ class GUI extends JFrame {
 
     }
 
+    int textSizeFromDigits(int digits) {
+
+        return 100 - (10 * (digits - 1));
+
+    }
+
     int translateCoordToLabel(int x, int y) {
 
         return 4 * (3 - y) + x;
+
+    }
+
+    int amountOfDigits(int n) {
+
+        int digits = 0;
+
+        while(n != 0) {
+
+            n /= 10;
+            digits++;
+
+        }
+
+        return digits;
 
     }
 
@@ -338,7 +392,6 @@ class KeyboardInput extends KeyAdapter {
         if(event.getKeyCode() == VK_UP) {
 
             gameGUI.boardData.moveUp();
-//            gameGUI.boardData.print();
             gameGUI.update();
 
         }
@@ -346,7 +399,6 @@ class KeyboardInput extends KeyAdapter {
         if(event.getKeyCode() == VK_DOWN) {
 
             gameGUI.boardData.moveDown();
-//            gameGUI.boardData.print();
             gameGUI.update();
 
         }
@@ -354,7 +406,6 @@ class KeyboardInput extends KeyAdapter {
         if(event.getKeyCode() == VK_RIGHT) {
 
             gameGUI.boardData.moveRight();
-//            gameGUI.boardData.print();
             gameGUI.update();
 
         }
@@ -362,7 +413,6 @@ class KeyboardInput extends KeyAdapter {
         if(event.getKeyCode() == VK_LEFT) {
 
             gameGUI.boardData.moveLeft();
-//            gameGUI.boardData.print();
             gameGUI.update();
 
         }
