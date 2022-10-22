@@ -14,19 +14,42 @@ public class Board {
 
     private final int[][] grid;
     private final Boolean[][] hasCombined;
+    private final GUI gameGUI;
 
     public Board() {
 
         grid = new int[4][4];
         hasCombined = new Boolean[4][4];
+
+//        grid[0][0] = 1;
+//        grid[0][1] = 2;
+//        grid[0][2] = 3;
+//        grid[0][3] = 4;
+//        grid[1][0] = 5;
+//        grid[1][1] = 6;
+//        grid[1][2] = 7;
+//        grid[1][3] = 8;
+//        grid[2][0] = 9;
+//        grid[2][1] = 10;
+//        grid[2][2] = 11;
+//        grid[2][3] = 12;
+//        grid[3][0] = 2;
+//        grid[3][1] = 2;
+//        grid[3][2] = 15;
+//        grid[3][3] = 16;
+
+        gameGUI = new GUI(this);
+
         spawnTile();
 
-        new GUI(this);
 
     }
 
     void spawnTile() {
         // Spawns a new tile, either a 2 or (at a 10% chance) a 4, at a random unoccupied location
+
+        if(!gridHasEmptyTiles()) return;
+        // If there are no empty tiles, don't infinitely try to create a new tile
 
         Random r = new Random();
         boolean newTileIsFour = (r.nextInt(10) == 0);
@@ -86,6 +109,77 @@ public class Board {
 
     }
 
+    void checkForGameOver() {
+
+        if(gridHasEmptyTiles()) return;
+
+        for(int x = 1; x < 3; x++) {
+
+            for(int y = 1; y < 3; y++) if(checkTileEdgesForMoves(x, y)) return;
+
+        }
+
+        if(checkTileEdgesForMoves(0, 0) || checkTileEdgesForMoves(0, 3)
+        || checkTileEdgesForMoves(3, 0) || checkTileEdgesForMoves(3, 3)) return;
+
+        gameGUI.showGameOver();
+
+    }
+
+    private boolean gridHasEmptyTiles() {
+
+        for(int x = 0; x < 4; x++) {
+
+            for(int y = 0; y < 4; y++) if(getTile(x, y) == 0) return true;
+
+        }
+
+        return false;
+
+    }
+
+    boolean checkTileEdgesForMoves(int x, int y) {
+
+        boolean lbCorner = (x == 0 && y == 0);
+        boolean ltCorner = (x == 0 && y == 3);
+        boolean rbCorner = (x == 3 && y == 0);
+        boolean rtCorner = (x == 3 && y == 3);
+
+        boolean checkUp = true;
+        boolean checkDown = true;
+        boolean checkRight = true;
+        boolean checkLeft = true;
+
+        if(lbCorner) {
+
+            checkLeft = false;
+            checkDown = false;
+
+        } else if(ltCorner) {
+
+            checkLeft = false;
+            checkUp = false;
+
+        } else if(rbCorner) {
+
+            checkRight = false;
+            checkDown = false;
+
+        } else if(rtCorner) {
+
+            checkRight = false;
+            checkUp = false;
+
+        }
+
+        if(checkRight && getTile(x, y) == getTile(x + 1, y)) return true;
+        else if(checkLeft && getTile(x, y) == getTile(x - 1, y)) return true;
+        else if(checkUp && getTile(x, y) == getTile(x, y + 1)) return true;
+        else if(checkDown && getTile(x, y) == getTile(x, y - 1)) return true;
+        else return false;
+
+    }
+
     void moveUp() {
         // Shifts all tiles up if applicable
 
@@ -138,7 +232,12 @@ public class Board {
 
         }
 
-        if(hasMoved) spawnTile();
+        if(hasMoved) {
+
+            spawnTile();
+            checkForGameOver();
+
+        }
 
     }
 
@@ -194,7 +293,12 @@ public class Board {
 
         }
 
-        if(hasMoved) spawnTile();
+        if(hasMoved) {
+
+            spawnTile();
+            checkForGameOver();
+
+        }
 
     }
 
@@ -250,7 +354,12 @@ public class Board {
 
         }
 
-        if(hasMoved) spawnTile();
+        if(hasMoved) {
+
+            spawnTile();
+            checkForGameOver();
+
+        }
 
     }
 
@@ -306,7 +415,18 @@ public class Board {
 
         }
 
-        if(hasMoved) spawnTile();
+        if(hasMoved) {
+
+            spawnTile();
+            checkForGameOver();
+
+        }
+
+    }
+
+    int[][] getGrid() {
+
+        return grid;
 
     }
 
@@ -398,6 +518,21 @@ class GUI extends JFrame {
             }
 
         }
+
+    }
+
+    void showGameOver() {
+
+        update();
+        // TODO: Fix the update bug where GUI does not update before game over
+
+        getContentPane().removeAll();
+        JLabel l = new JLabel("GAME OVER!");
+        l.setFont(new Font(l.getFont().getName(), Font.BOLD, 100));
+        l.setHorizontalAlignment(JLabel.CENTER);
+        l.setForeground(Color.RED);
+        add(l);
+        getContentPane().validate();
 
     }
 
