@@ -48,21 +48,39 @@ public class Board {
 
     }
 
-//    void print() {
-//
-//        for(int y = 0; y < 4; y++) {
-//
-//            for(int x = 0; x < 4; x++) {
-//
-//                System.out.print(grid[x][3 - y] + "  ");
-//
-//            }
-//
-//            System.out.println();
-//
-//        }
-//
-//    }
+    boolean doShift(boolean horizontal, int shift, int c1, int c2, Boolean[] hasCombined) {
+
+        int x1, y1, x2, y2;
+
+        if(horizontal) {
+
+            x1 = shift;
+            y1 = c2;
+            x2 = c1;
+            y2 = c2;
+
+        } else {
+
+            x1 = c2;
+            y1 = shift;
+            x2 = c2;
+            y2 = c1;
+
+        }
+
+        if(grid[x1][y1] == 0) grid[x1][y1] = grid[x2][y2];
+        else if(!hasCombined[shift]) {
+
+            grid[x1][y1] *= 2;
+            hasCombined[shift] = true;
+
+        }
+
+        grid[x2][y2] = 0;
+
+        return true;
+
+    }
 
     void moveUp() {
 
@@ -77,29 +95,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty (prevents unnecessary work)
 
-                    int shift = 0;
-                    // Y-offset from the current coord
+                    Boolean[] hasCombined = new Boolean[4];
+                    // Boolean array that represents (for each tile above) whether the tile has already been combined
+                    // Prevents multi-combine bug
+                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
+                    // Fills wrapper array with false values
+
+                    int shift = y;
+                    // Y-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(y + shift == 3 || (grid[x][y + shift + 1] != 0 && grid[x][y + shift + 1] != grid[x][y])) doShift = true;
-                            // If the shift has either reached the grid boundaries, or the next number is not a 0 and not the same number, shift
+                        if(shift == 3 || (grid[x][shift + 1] != 0 && grid[x][shift + 1] != grid[x][y])) doShift = true;
+                        // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
+                        else if(grid[x][shift + 1] == grid[x][y] && hasCombined[shift + 1]) doShift = true;
+                        // If the next tile is the same number, but it has already been merged, shift using the current value
                         else shift++;
                         // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != 0) {
-
-                            hasMoved = true;
-
-                            if(grid[x][y + shift] == 0) grid[x][y + shift] = grid[x][y];
-                            else grid[x][y + shift] *= 2;
-
-                            grid[x][y] = 0;
-
-                        }
+                        if(doShift && shift != y) hasMoved = doShift(false, shift, y, x, hasCombined);
+                        // If the shift is to be performed, update hasMoved to reflect as much
+                        // This is written in an odd way to avoid a multi-line statement
 
                     }
 
@@ -126,29 +145,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty
 
-                    int shift = 0;
-                    // Y-offset from the current coord
+                    Boolean[] hasCombined = new Boolean[4];
+                    // Boolean array that represents (for each tile above) whether the tile has already been combined
+                    // Prevents multi-combine bug
+                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
+                    // Fills wrapper array with false values
+
+                    int shift = y;
+                    // Y-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(y - shift == 0 || (grid[x][y - shift - 1] != 0 && grid[x][y - shift - 1] != grid[x][y])) doShift = true;
-                            // If the shift has either reached the grid boundaries, or the next number is not a 0, shift
-                        else shift++;
-                        // Otherwise, if the next number is a 0, keep incrementing shift
+                        if(shift == 0 || (grid[x][shift - 1] != 0 && grid[x][shift - 1] != grid[x][y])) doShift = true;
+                        // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
+                        else if(grid[x][shift - 1] == grid[x][y] && hasCombined[shift - 1]) doShift = true;
+                        // If the next tile is the same number, but it has already been merged, shift using the current value
+                        else shift--;
+                        // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != 0) {
-
-                            hasMoved = true;
-
-                            if(grid[x][y - shift] == 0) grid[x][y - shift] = grid[x][y];
-                            else grid[x][y - shift] *= 2;
-
-                            grid[x][y] = 0;
-
-                        }
+                        if(doShift && shift != y) hasMoved = doShift(false, shift, y, x, hasCombined);
+                        // If the shift is to be performed, update hasMoved to reflect as much
+                        // This is written in an odd way to avoid a multi-line statement
 
                     }
 
@@ -175,29 +195,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty
 
-                    int shift = 0;
-                    // Y-offset from the current coord
+                    Boolean[] hasCombined = new Boolean[4];
+                    // Boolean array that represents (for each tile above) whether the tile has already been combined
+                    // Prevents multi-combine bug
+                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
+                    // Fills wrapper array with false values
+
+                    int shift = x;
+                    // X-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(x + shift == 3 || (grid[x + shift + 1][y] != 0 && grid[x + shift + 1][y] != grid[x][y])) doShift = true;
-                            // If the shift has either reached the grid boundaries, or the next number is not a 0 and not the same number, shift
+                        if(shift == 3 || (grid[shift + 1][y] != 0 && grid[shift + 1][y] != grid[x][y])) doShift = true;
+                        // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
+                        else if(grid[shift + 1][y] == grid[x][y] && hasCombined[shift + 1]) doShift = true;
+                        // If the next tile is the same number, but it has already been merged, shift using the current value
                         else shift++;
                         // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != 0) {
-
-                            hasMoved = true;
-
-                            if(grid[x + shift][y] == 0) grid[x + shift][y] = grid[x][y];
-                            else grid[x + shift][y] *= 2;
-
-                            grid[x][y] = 0;
-
-                        }
+                        if(doShift && shift != x) hasMoved = doShift(true, shift, x, y, hasCombined);
+                        // If the shift is to be performed, update hasMoved to reflect as much
+                        // This is written in an odd way to avoid a multi-line statement
 
                     }
 
@@ -224,29 +245,30 @@ public class Board {
                 if(grid[x][y] != 0) {
                     // If the value at this coord is not empty
 
-                    int shift = 0;
-                    // Y-offset from the current coord
+                    Boolean[] hasCombined = new Boolean[4];
+                    // Boolean array that represents (for each tile above) whether the tile has already been combined
+                    // Prevents multi-combine bug
+                    for(int i = 0; i < 4; i++) hasCombined[i] = false;
+                    // Fills wrapper array with false values
+
+                    int shift = x;
+                    // X-coord of new tile location
                     boolean doShift = false;
                     // Whether to perform the shift on each loop
 
                     while(!doShift) {
                         // Until the shift is performed, repeat
 
-                        if(x - shift == 0 || (grid[x - shift - 1][y] != 0 && grid[x - shift - 1][y] != grid[x][y])) doShift = true;
-                            // If the shift has either reached the grid boundaries, or the next number is not a 0 and not the same number, shift
-                        else shift++;
+                        if(shift == 0 || (grid[shift - 1][y] != 0 && grid[shift - 1][y] != grid[x][y])) doShift = true;
+                        // If the shift has either reached the grid boundaries, or the next tile is not a 0 and not the same number, shift
+                        else if(grid[shift - 1][y] == grid[x][y] && hasCombined[shift - 1]) doShift = true;
+                        // If the next tile is the same number, but it has already been merged, shift using the current value
+                        else shift--;
                         // Otherwise, if the next number is a 0, or it is the same number, keep incrementing shift
 
-                        if(doShift && shift != 0) {
-
-                            hasMoved = true;
-
-                            if(grid[x - shift][y] == 0) grid[x - shift][y] = grid[x][y];
-                            else grid[x - shift][y] *= 2;
-
-                            grid[x][y] = 0;
-
-                        }
+                        if(doShift && shift != x) hasMoved = doShift(true, shift, x, y, hasCombined);
+                        // If the shift is to be performed, update hasMoved to reflect as much
+                        // This is written in an odd way to avoid a multi-line statement
 
                     }
 
